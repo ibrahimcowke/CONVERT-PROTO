@@ -11,31 +11,26 @@ export const generateExportCSV = (credentials: Credential[], targetPlatform: Pla
       // title, website, login, password, notes, otpSecret
       headers = ['title', 'website', 'login', 'password', 'notes'];
       rows = credentials.map(c => {
-        // Collect all potential usernames/logins from originalData to ensure nothing is missed
-        const logins = new Set<string>();
-        if (c.username) logins.add(c.username);
-        
         const orig = c.originalData || {};
-        // These fields are already normalized (lowercase, no spaces) by the Dashlane converter
-        const usernameFields = ['username', 'username2', 'email', 'login', 'secondarylogin', 'secondaryusername', 'alias'];
+        const usernameFields = ['username', 'email', 'login', 'secondarylogin', 'username2', 'secondaryusername', 'alias'];
         
+        // Use the primary username identified during conversion
+        const primaryLogin = c.username;
+        
+        // Collect ALL other unique identifiers found in original data
+        const secondaryLogins = new Set<string>();
         usernameFields.forEach(field => {
           const val = orig[field];
-          if (val && typeof val === 'string' && val.trim()) {
-            logins.add(val.trim());
+          if (val && typeof val === 'string' && val.trim() && val.trim() !== primaryLogin) {
+            secondaryLogins.add(val.trim());
           }
         });
         
-        const loginList = Array.from(logins);
-        const loginStr = loginList.join(' / ');
+        // Construct the note with secondary logins
+        const loginList = Array.from(secondaryLogins);
+        const usernamesNote = loginList.map(l => `Alt Login: ${l}`).join(' | ');
         
-        // Also keep them in notes for safety with clear labels
-        const usernamesNote = loginList.map((l, idx) => {
-            if (l === c.username && idx === 0) return `Primary Username: ${l}`;
-            return `Alt Login: ${l}`;
-        });
-        
-        let finalNote = usernamesNote.join(' | ');
+        let finalNote = usernamesNote;
         if (c.note) {
           finalNote = finalNote ? `${finalNote}\n---\n${c.note}` : c.note;
         }
@@ -43,7 +38,7 @@ export const generateExportCSV = (credentials: Credential[], targetPlatform: Pla
         return [
           c.name || c.url || 'Untitled',
           c.url || '',
-          loginStr,
+          primaryLogin,
           c.password || '',
           finalNote
         ];

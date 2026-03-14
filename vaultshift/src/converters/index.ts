@@ -19,7 +19,7 @@ export const converters: Record<string, (row: any) => Credential | null> = {
     if (!r.password && !r.username && !r.login && !r.email && !r.username2 && !r.secondarylogin) return null;
     
     // Pick a primary username for display, prioritizing in this order
-    const username = r.username || r.login || r.email || r.secondarylogin || r.username2 || '';
+    const username = r.username || r.email || r.login || r.secondarylogin || r.username2 || '';
     const url = r.url || r.website || '';
     
     return {
