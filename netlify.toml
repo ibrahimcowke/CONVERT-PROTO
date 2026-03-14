@@ -1,0 +1,14 @@
+[build]
+  # Navigate to the subdirectory for the build
+  base = "vaultshift"
+  
+  # Command to run inside the subdirectory
+  command = "npm run build"
+  
+  # Directory where build assets are generated (relative to the base)
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
