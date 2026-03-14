@@ -59,22 +59,19 @@ export const generateExportCSV = (credentials: Credential[], targetPlatform: Pla
       ]);
       break;
     case 'Dashlane':
-      headers = ['url', 'username', 'email', 'secondaryLogin', 'password', 'title', 'note'];
+      headers = ['url', 'username', 'secondaryLogin', 'password', 'title'];
       rows = credentials.map(c => {
         const orig = c.originalData || {};
         // Preservation using normalized keys from converter
         const originalUser = orig.username || orig.login || c.username || '';
-        const originalEmail = orig.email || c.username || orig.username || orig.login || '';
         const originalSec = orig.secondarylogin || orig.username2 || '';
         
         return [
           c.url || '',
           originalUser,
-          originalEmail,
           originalSec,
           c.password || '',
-          c.name || 'Untitled',
-          c.note || ''
+          c.name || 'Untitled'
         ];
       });
       break;
