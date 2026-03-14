@@ -11,6 +11,7 @@ import { ValidationPanel } from './components/ValidationPanel';
 import { PreviewTable } from './components/PreviewTable';
 import { DownloadPanel } from './components/DownloadPanel';
 import { StatsDashboard } from './components/StatsDashboard';
+import { ManualMapper } from './components/ManualMapper';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
@@ -37,6 +38,15 @@ function App() {
     const issueWarnings = analyzeCredentials(credentials);
     setWarnings(issueWarnings);
   }, [credentials, setWarnings]);
+
+  // Security: Auto-wipe on tab close / reload
+  useEffect(() => {
+    const handleUnload = () => {
+      useMigrationStore.getState().clearAll();
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[var(--color-brand-bg)] text-slate-200 font-sans flex flex-col selection:bg-[var(--color-brand-primary)] selection:text-white">
@@ -67,8 +77,14 @@ function App() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="w-full"
               >
-                <ManagerSelector />
-                <ValidationPanel />
+                {detectedSource === 'Unknown' && credentials.length === 0 ? (
+                  <ManualMapper />
+                ) : (
+                  <>
+                    <ManagerSelector />
+                    <ValidationPanel />
+                  </>
+                )}
               </motion.div>
             )}
 

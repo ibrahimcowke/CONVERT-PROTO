@@ -1,12 +1,15 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileType, CheckCircle } from 'lucide-react';
+import { Upload, FileType, CheckCircle, ClipboardPaste, X } from 'lucide-react';
 import { useMigrationStore } from '../store/useMigrationStore';
-import { parseCSV } from '../utils/csvParser';
+import { parseCSV, parseStringCSV } from '../utils/csvParser';
 import { detectFormat } from '../utils/formatDetector';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const UploadPanel: React.FC = () => {
   const { file, setFile, setRawParsedResult, detectedSource, targetPlatform } = useMigrationStore();
+  const [isPasteMode, setIsPasteMode] = React.useState(false);
+  const [pasteData, setPasteData] = React.useState('');
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -22,6 +25,21 @@ export const UploadPanel: React.FC = () => {
     }
   }, [setFile, setRawParsedResult]);
 
+  const handlePasteSubmit = useCallback(async () => {
+    if (!pasteData.trim()) return;
+    try {
+      const result = await parseStringCSV(pasteData);
+      const source = detectFormat(result.headers);
+      setRawParsedResult(result, source);
+      // Create a dummy file for state consistency
+      const dummyFile = new File([pasteData], "pasted-data.csv", { type: "text/csv" });
+      setFile(dummyFile);
+    } catch (err) {
+      alert("Failed to parse pasted data. Please ensure it's valid CSV/JSON.");
+      console.error(err);
+    }
+  }, [pasteData, setFile, setRawParsedResult]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -32,23 +50,86 @@ export const UploadPanel: React.FC = () => {
   });
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-[var(--color-brand-surface)] rounded-xl shadow-lg border border-slate-700/50 transition-all duration-300">
+    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-[var(--color-brand-surface)] rounded-xl shadow-lg border border-slate-700/50 transition-all duration-300">
       
-      {!file ? (
-        <div 
-          {...getRootProps()} 
-          className={`flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200
-            ${isDragActive ? 'border-[var(--color-brand-primary)] bg-blue-900/20' : 'border-slate-600 hover:border-slate-500 hover:bg-slate-800/50'}`}
-        >
-          <input {...getInputProps()} />
-          <div className="p-4 bg-slate-800 rounded-full mb-4 group-hover:bg-slate-700 transition">
-            <Upload className="w-10 h-10 text-slate-300" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">Drag & Drop file to upload</h3>
-          <p className="text-slate-400 text-sm max-w-sm text-center">
-            Upload your CSV or JSON password export. Supported: Dashlane, Bitwarden, LastPass, 1Password, Google, iCloud.
-          </p>
+      {!file && (
+        <div className="flex justify-center mb-6 space-x-4">
+          <button 
+            onClick={() => setIsPasteMode(false)}
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${!isPasteMode ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Upload File
+          </button>
+          <button 
+            onClick={() => setIsPasteMode(true)}
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${isPasteMode ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Paste Data
+          </button>
         </div>
+      )}
+
+      {!file ? (
+        <AnimatePresence mode="wait">
+          {!isPasteMode ? (
+            <motion.div 
+              key="dropzone"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div 
+                {...getRootProps()} 
+                className={`flex flex-col items-center justify-center p-8 sm:p-12 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200
+                  ${isDragActive ? 'border-[var(--color-brand-primary)] bg-blue-900/20' : 'border-slate-600 hover:border-slate-500 hover:bg-slate-800/50'}`}
+              >
+                <input {...getInputProps()} />
+                <div className="p-4 bg-slate-800 rounded-full mb-4 group-hover:bg-slate-700 transition">
+                  <Upload className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">Drag & Drop file to upload</h3>
+                <p className="text-slate-400 text-xs sm:text-sm max-w-sm text-center">
+                  Upload your CSV/JSON export. Supported: Dashlane, Bitwarden, LastPass, 1Password, etc.
+                </p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="paste"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              <div className="relative">
+                <textarea
+                  value={pasteData}
+                  onChange={(e) => setPasteData(e.target.value)}
+                  placeholder="Paste your CSV or JSON data here..."
+                  className="w-full h-48 bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm font-mono text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600"
+                />
+                {pasteData && (
+                  <button 
+                    type="button"
+                    onClick={() => setPasteData('')}
+                    className="absolute top-2 right-2 p-1 bg-slate-800 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    <X className="w-3 h-3 text-slate-400" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handlePasteSubmit}
+                disabled={!pasteData.trim()}
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
+              >
+                <ClipboardPaste className="w-4 h-4" />
+                <span>Process Pasted Data</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       ) : (
         <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-6 bg-slate-800/50 rounded-lg border border-slate-700 w-full">
           <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-0 w-full sm:w-auto">

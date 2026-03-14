@@ -4,7 +4,7 @@ import { generateExportCSV, downloadFile } from '../utils/csvExporter';
 import { Download, RefreshCcw, Loader2 } from 'lucide-react';
 
 export const DownloadPanel: React.FC = () => {
-  const { credentials, targetPlatform, resetAll, isConverting, setIsConverting } = useMigrationStore();
+  const { credentials, targetPlatform, clearAll, isConverting, setIsConverting } = useMigrationStore();
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   if (credentials.length === 0) return null;
@@ -62,7 +62,7 @@ export const DownloadPanel: React.FC = () => {
 
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto z-10 flex-wrap justify-end">
         <button
-          onClick={resetAll}
+          onClick={clearAll}
           className="px-5 py-3 rounded-lg font-medium border border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors w-full sm:w-auto flex items-center justify-center whitespace-nowrap"
         >
           <RefreshCcw className="w-4 h-4 mr-2" />

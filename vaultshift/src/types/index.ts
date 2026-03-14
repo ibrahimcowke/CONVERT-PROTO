@@ -52,5 +52,5 @@ export interface MigrationState {
   updateCredential: (id: string, updates: Partial<Credential>) => void;
   removeCredential: (id: string) => void;
   removeMultipleCredentials: (ids: string[]) => void;
-  resetAll: () => void;
+  clearAll: () => void;
 }

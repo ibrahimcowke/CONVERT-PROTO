@@ -22,3 +22,22 @@ export const parseCSV = (file: File): Promise<ParseResult> => {
     });
   });
 };
+
+export const parseStringCSV = (content: string): Promise<ParseResult> => {
+  return new Promise((resolve, reject) => {
+    Papa.parse<Record<string, string>>(content, {
+      header: true,
+      skipEmptyLines: 'greedy',
+      complete: (results) => {
+        const headers = results.meta.fields || [];
+        resolve({
+          headers,
+          rows: results.data
+        });
+      },
+      error: (error: any) => {
+        reject(error);
+      }
+    });
+  });
+};

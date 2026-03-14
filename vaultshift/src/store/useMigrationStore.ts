@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { MigrationState, Credential } from '../types';
+import { encrypt, clearSession } from '../utils/crypto';
 
 export const useMigrationStore = create<MigrationState>((set) => ({
   file: null,
@@ -11,8 +12,21 @@ export const useMigrationStore = create<MigrationState>((set) => ({
   isConverting: false,
 
   setFile: (file) => set({ file }),
-  setRawParsedResult: (result, source) =>
-    set({ rawParsedResult: result, detectedSource: source }),
+  setRawParsedResult: async (result, source) => {
+    // Security: Encrypt originalData fields in rows before storing
+    const encryptedRows = await Promise.all(result.rows.map(async row => {
+      const encryptedRow: Record<string, string> = {};
+      for (const [key, value] of Object.entries(row)) {
+        encryptedRow[key] = await encrypt(value);
+      }
+      return encryptedRow;
+    }));
+    
+    set({ 
+      rawParsedResult: { ...result, rows: encryptedRows }, 
+      detectedSource: source 
+    });
+  },
   setTargetPlatform: (target) => set({ targetPlatform: target }),
   setCredentials: (credentials) => set({ credentials }),
   setWarnings: (warnings) => set({ warnings }),
@@ -26,12 +40,15 @@ export const useMigrationStore = create<MigrationState>((set) => ({
   removeMultipleCredentials: (ids: string[]) => set((state) => ({
     credentials: state.credentials.filter(c => !ids.includes(c.id))
   })),
-  resetAll: () =>
+  clearAll: () => {
+    clearSession();
     set({
       file: null,
       rawParsedResult: null,
       detectedSource: 'Detecting...',
       credentials: [],
       warnings: [],
-    }),
+      targetPlatform: 'Proton Pass',
+    });
+  },
 }));
