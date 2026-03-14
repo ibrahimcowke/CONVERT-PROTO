@@ -1,0 +1,16 @@
+[build]
+  # The directory that contains the deploy-ready assets
+  publish = "dist"
+  
+  # The command Netlify will run to build your site
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production]
+  # This can help CLI understand we want the 'main' branch for production
+  # though usually CLI asks if it's not linked to a repo.
+  environment = { NODE_VERSION = "20" }
