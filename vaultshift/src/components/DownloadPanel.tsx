@@ -49,13 +49,13 @@ export const DownloadPanel: React.FC = () => {
       <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">Ready for Export</h2>
-        <p className="text-slate-400 max-w-md">
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Ready for Export</h2>
+        <p className="text-slate-400 text-sm sm:text-base max-w-md">
           {credentials.length} credentials have been successfully mapped from detected source to <strong className="text-white">{targetPlatform}</strong> format.
         </p>
         {needsChunking && targetPlatform === 'Proton Pass' && (
-          <p className="text-orange-400 text-sm mt-3 bg-orange-500/10 p-2 rounded border border-orange-500/20">
-            <strong>Note:</strong> Proton Pass sometimes restricts large imports ("Too many verification requests"). We recommend downloading via the Parts below.
+          <p className="text-orange-400 text-xs sm:text-sm mt-3 bg-orange-500/10 p-3 rounded-lg border border-orange-500/20 leading-relaxed">
+            <strong>ProTip:</strong> Proton Pass might limit large imports. Use the <strong>Parts</strong> below for a smoother migration.
           </p>
         )}
       </div>

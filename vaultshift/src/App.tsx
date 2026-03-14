@@ -10,6 +10,7 @@ import { ManagerSelector } from './components/ManagerSelector';
 import { ValidationPanel } from './components/ValidationPanel';
 import { PreviewTable } from './components/PreviewTable';
 import { DownloadPanel } from './components/DownloadPanel';
+import { StatsDashboard } from './components/StatsDashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
@@ -28,12 +29,14 @@ function App() {
       // 1. Normalize
       const normalized = normalizeToCredentials(rawParsedResult.rows, detectedSource);
       setCredentials(normalized);
-      
-      // 2. Validate
-      const issueWarnings = analyzeCredentials(normalized);
-      setWarnings(issueWarnings);
     }
-  }, [rawParsedResult, detectedSource, targetPlatform, setCredentials, setWarnings]);
+  }, [rawParsedResult, detectedSource, targetPlatform, setCredentials]);
+
+  // Re-validate whenever credentials change (from edits, deletions, or initial load)
+  useEffect(() => {
+    const issueWarnings = analyzeCredentials(credentials);
+    setWarnings(issueWarnings);
+  }, [credentials, setWarnings]);
 
   return (
     <div className="min-h-screen bg-[var(--color-brand-bg)] text-slate-200 font-sans flex flex-col selection:bg-[var(--color-brand-primary)] selection:text-white">
@@ -78,6 +81,7 @@ function App() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="w-full pb-20"
               >
+                <StatsDashboard />
                 <DownloadPanel />
                 <PreviewTable />
               </motion.div>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { MigrationState } from '../types';
+import type { MigrationState, Credential } from '../types';
 
 export const useMigrationStore = create<MigrationState>((set) => ({
   file: null,
@@ -17,6 +17,15 @@ export const useMigrationStore = create<MigrationState>((set) => ({
   setCredentials: (credentials) => set({ credentials }),
   setWarnings: (warnings) => set({ warnings }),
   setIsConverting: (isConverting) => set({ isConverting }),
+  updateCredential: (id: string, updates: Partial<Credential>) => set((state) => ({
+    credentials: state.credentials.map((c): Credential => c.id === id ? { ...c, ...updates } : c)
+  })),
+  removeCredential: (id: string) => set((state) => ({
+    credentials: state.credentials.filter(c => c.id !== id)
+  })),
+  removeMultipleCredentials: (ids: string[]) => set((state) => ({
+    credentials: state.credentials.filter(c => !ids.includes(c.id))
+  })),
   resetAll: () =>
     set({
       file: null,

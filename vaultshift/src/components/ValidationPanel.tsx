@@ -26,14 +26,14 @@ export const ValidationPanel: React.FC = () => {
             )}
           </div>
           <div>
-            <h3 className="font-semibold text-lg flex items-center">
-              Data Validation Warnings
-              <span className="ml-3 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-900 border border-slate-700">
-                {warnings.length} issues found
+            <h3 className="font-bold text-base sm:text-lg flex items-center text-slate-100">
+              Health Checks
+              <span className="ml-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 border border-slate-700 text-slate-400">
+                {warnings.length} issues
               </span>
             </h3>
-            <p className="text-sm text-slate-400">
-              {dangerCount} critical · {warningCount} warnings
+            <p className="text-xs text-slate-500 mt-0.5 font-medium">
+              {dangerCount} critical · {warningCount} suggested improvements
             </p>
           </div>
         </div>

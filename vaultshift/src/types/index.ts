@@ -49,5 +49,8 @@ export interface MigrationState {
   setCredentials: (creds: Credential[]) => void;
   setWarnings: (warnings: DataWarning[]) => void;
   setIsConverting: (status: boolean) => void;
+  updateCredential: (id: string, updates: Partial<Credential>) => void;
+  removeCredential: (id: string) => void;
+  removeMultipleCredentials: (ids: string[]) => void;
   resetAll: () => void;
 }
